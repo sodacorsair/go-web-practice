@@ -14,8 +14,8 @@ import (
 )
 
 func sayhelloName(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()  //解析参数，默认是不会解析的
-	fmt.Println(r.Form)  //这些信息是输出到服务器端的打印信息
+	r.ParseForm()       //解析参数，默认是不会解析的
+	fmt.Println(r.Form) //这些信息是输出到服务器端的打印信息
 	fmt.Println("path", r.URL.Path)
 	fmt.Println("scheme", r.URL.Scheme)
 	fmt.Println(r.Form["url_long"])
@@ -29,14 +29,14 @@ func sayhelloName(w http.ResponseWriter, r *http.Request) {
 func login(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method: ", r.Method)
 	if r.Method == "GET" {
-		curtime  := time.Now().Unix()
+		curtime := time.Now().Unix()
 		h := md5.New()
 		io.WriteString(h, strconv.FormatInt(curtime, 10))
 		token := fmt.Sprintf("%x", h.Sum(nil))
 
-		t, _  := template.ParseFiles("/home/eru/go/src/go-web-practice/chap03/login.gtpl")
+		t, _ := template.ParseFiles("/home/eru/go/src/go-web-practice/chap03/login.gtpl")
 		//log.Println(t)
-        t.Execute(w, token)
+		t.Execute(w, token)
 	} else {
 		r.ParseForm()
 		token := r.Form.Get("token")
@@ -48,8 +48,8 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Println("username: ", r.Form["username"])
 		fmt.Println("password: ", r.Form["password"])
-		template.HTMLEscape(w,  []byte(r.Form.Get("username")))
-		t , _ := template.New("foo").Parse(`{{define "T"}}Hello, {{.}}!{{end}}`)
+		template.HTMLEscape(w, []byte(r.Form.Get("username")))
+		t, _ := template.New("foo").Parse(`{{define "T"}}Hello, {{.}}!{{end}}`)
 		t.ExecuteTemplate(w, "T", template.HTML("<script>alert('you have been pwned')</script>"))
 	}
 }
@@ -62,7 +62,7 @@ func upload(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(h, strconv.FormatInt(curtime, 10))
 		token := fmt.Sprintf("%x", h.Sum(nil))
 
-		t, _ := template.ParseFiles("/home/eru/go/src/go-web-practice/chap03/upload.gtpl")
+		t, _ := template.ParseFiles("D:/Development/Go_Repo/go/src/go-web-practice/chap03/upload.gtpl")
 		t.Execute(w, token)
 	} else {
 		r.ParseMultipartForm(32 << 20)
@@ -73,7 +73,7 @@ func upload(w http.ResponseWriter, r *http.Request) {
 		}
 		defer file.Close()
 		fmt.Fprintf(w, "%v", handler.Header)
-		f, err := os.OpenFile("./test/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+		f, err := os.OpenFile("D:/Development/Go_Repo/go/src/go-web-practice/chap03/test/"+"lla", os.O_WRONLY|os.O_CREATE, 0666)
 		if err != nil {
 			fmt.Println(err)
 			return
