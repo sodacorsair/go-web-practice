@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/md5"
 	"fmt"
+	"go-web-practice/chap06/session"
 	"html/template"
 	"io"
 	"log"
@@ -27,32 +28,64 @@ func sayhelloName(w http.ResponseWriter, r *http.Request) {
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("method: ", r.Method)
-	if r.Method == "GET" {
-		curtime := time.Now().Unix()
-		h := md5.New()
-		io.WriteString(h, strconv.FormatInt(curtime, 10))
-		token := fmt.Sprintf("%x", h.Sum(nil))
-
-		t, _ := template.ParseFiles("/home/eru/go/src/go-web-practice/chap03/login.gtpl")
-		//log.Println(t)
-		t.Execute(w, token)
+	//fmt.Println("method: ", r.Method)
+	//if r.Method == "GET" {
+	//	curtime := time.Now().Unix()
+	//	h := md5.New()
+	//	io.WriteString(h, strconv.FormatInt(curtime, 10))
+	//	token := fmt.Sprintf("%x", h.Sum(nil))
+	//
+	//	t, _ := template.ParseFiles("/home/eru/go/src/go-web-practice/chap03/login.gtpl")
+	//	//log.Println(t)
+	//	t.Execute(w, token)
+	//} else {
+	//	r.ParseForm()
+	//	token := r.Form.Get("token")
+	//	if token != "" {
+	//
+	//	} else {
+	//
+	//	}
+	//
+	//	fmt.Println("username: ", r.Form["username"])
+	//	fmt.Println("password: ", r.Form["password"])
+	//	template.HTMLEscape(w, []byte(r.Form.Get("username")))
+	//	t, _ := template.New("foo").Parse(`{{define "T"}}Hello, {{.}}!{{end}}`)
+	//	t.ExecuteTemplate(w, "T", template.HTML("<script>alert('you have been pwned')</script>"))
+	//}
+    sess := session.GlobalSessions.SessionStart(w, r)
+    r.ParseForm()
+    if r.Method == "GET" {
+    	t, _ := template.ParseFiles("login.gtpl")
+    	w.Header().Set("Content-Type", "text/html")
+    	t.Execute(w, sess.Get("username"))
 	} else {
-		r.ParseForm()
-		token := r.Form.Get("token")
-		if token != "" {
-
-		} else {
-
-		}
-
-		fmt.Println("username: ", r.Form["username"])
-		fmt.Println("password: ", r.Form["password"])
-		template.HTMLEscape(w, []byte(r.Form.Get("username")))
-		t, _ := template.New("foo").Parse(`{{define "T"}}Hello, {{.}}!{{end}}`)
-		t.ExecuteTemplate(w, "T", template.HTML("<script>alert('you have been pwned')</script>"))
+		sess.Get("username", r.Form["username"])
+		http.Redirect(w, r, "/", 302)
 	}
 }
+
+func count(w http.ResponseWriter, r *http.Request) {
+	sess := session.GlobalSessions.SessionStart(w, r)
+	createtime := sess.Get("createtime")
+	if createtime == nil {
+		sess.Set("createtime", time.Now().Unix())
+	} else if (createtime.(int64) + 360) < (time.Now().Unix()) {
+		session.GlobalSessions.SessionDestroy(w, r)
+		sess = session.GlobalSessions.SessionStart(w, r)
+	}
+	ct := sess.Get("countnum")
+	if ct == nil {
+		sess.Set("countnum", 1)
+	} else {
+		sess.Set("countnum", (ct.(int) + 1))
+	}
+	t, _ := template.ParseFiles("count.gtpl")
+	w.Header().Set("Content-Type", "text/html")
+	t.Execute(w, sess.Get("countnum"))
+}
+
+
 
 func upload(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method: ", r.Method)
