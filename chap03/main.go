@@ -53,14 +53,14 @@ func login(w http.ResponseWriter, r *http.Request) {
 	//	t, _ := template.New("foo").Parse(`{{define "T"}}Hello, {{.}}!{{end}}`)
 	//	t.ExecuteTemplate(w, "T", template.HTML("<script>alert('you have been pwned')</script>"))
 	//}
-    sess := session.GlobalSessions.SessionStart(w, r)
-    r.ParseForm()
-    if r.Method == "GET" {
-    	t, _ := template.ParseFiles("login.gtpl")
-    	w.Header().Set("Content-Type", "text/html")
-    	t.Execute(w, sess.Get("username"))
+	sess := session.GlobalSessions.SessionStart(w, r)
+	r.ParseForm()
+	if r.Method == "GET" {
+		t, _ := template.ParseFiles("D:/Development/Go_Repo/go/src/go-web-practice/chap03/login.gtpl")
+		w.Header().Set("Content-Type", "text/html")
+		t.Execute(w, sess.Get("username"))
 	} else {
-		sess.Get("username", r.Form["username"])
+		sess.Set("username", r.Form["username"])
 		http.Redirect(w, r, "/", 302)
 	}
 }
@@ -84,8 +84,6 @@ func count(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	t.Execute(w, sess.Get("countnum"))
 }
-
-
 
 func upload(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("method: ", r.Method)
